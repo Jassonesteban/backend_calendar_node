@@ -1,53 +1,99 @@
 const express = require('express');
-const { validationResult } = require('express-validator');
+const User = require('../models/User');
+const bcrypt = require('bcryptjs');
+const { generateJWT } = require('../helpers/jwt');
 
-const crearUser = (req, res = express.response) => {
+const crearUser = async (req, res = express.response) => {
 
-    const { name, email, password } = req.body;
+    const { email, password } = req.body;
+    try {
 
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({
+        let user = await User.findOne({ email });
+
+        if (user) {
+            return res.status(400).json({
+                ok: false,
+                msg: 'El usuario ya existe'
+            });
+        }
+
+        user = new User(req.body);
+
+        //encriptar password
+        const salt = bcrypt.genSaltSync();
+        user.password = bcrypt.hashSync(password, salt);
+
+        await user.save();
+
+        const token = await generateJWT(user.id, user.name);
+
+        res.status(201).json({
+            ok: true,
+            user,
+            token
+        });
+    } catch (error) {
+
+        res.status(500).json({
             ok: false,
-            errors: errors.mapped()
+            msg: 'Hubo un error interno'
         })
     }
 
-    res.status(201).json({
-        ok: true,
-        msg: 'registro',
-        name,
-        email,
-        password
-    });
 }
 
-const loginUser = (req, res = express.response) => {
+const loginUser = async (req, res = express.response) => {
 
     const { email, password } = req.body;
 
-    const errors = validationResult(req);
+    try {
+        const user = await User.findOne({ email });
 
-    if (!errors.isEmpty()) {
-        return res.status(400).json({
+        if (!user) {
+            return res.status(400).json({
+                ok: false,
+                msg: 'El usuario no existe'
+            });
+        }
+
+        const validPassword = bcrypt.compareSync(password, usuario.password);
+        if (!validPassword) {
+            return res.status(400).json({
+                ok: false,
+                msg: 'Credenciales incorrectas'
+            })
+        }
+
+        //generar jwt
+        const token = await generateJWT(user.id, user.name);
+        res.json({
+            ok: true,
+            user,
+            token
+        })
+
+
+    } catch (error) {
+        res.status(500).json({
             ok: false,
-            errors: errors.mapped()
+            msg: 'Hubo un error interno'
         })
     }
+}
+
+const revalidateToken = async (req, res = express.response) => {
+
+    const {uid, name} = req;
+
+    // generar nuevo jwt y enviarlo en esta nueva peticion
+    const token = await generateJWT(uid, name);
+
 
     res.status(201).json({
         ok: true,
-        msg: 'login de usuario',
+        uid,
         name,
-        email,
-        password
-    });
-}
-
-const revalidateToken = (req, res = express.response) => {
-    res.json({
-        ok: true,
-        msg: 'validate token'
+        token
     });
 }
 
