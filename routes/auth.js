@@ -12,7 +12,7 @@ router.post('/newUser', [
     validarCampos
 ], crearUser);
 
-router.post('/login', [
+router.post('/', [
     check('email', 'debe ser un email valido').isEmail(),
     check('password', 'La contraseña debe ser de 6 caracteres').isLength({ min: 6 }),
     validarCampos

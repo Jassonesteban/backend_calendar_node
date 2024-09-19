@@ -7,7 +7,6 @@ const dbConnection = async() => {
 
         console.log("DB ONLINE")
     } catch (error) {
-        console.log(error)
         throw new Error("Error al conectar a la BD")
     }
 }

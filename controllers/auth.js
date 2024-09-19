@@ -36,7 +36,8 @@ const crearUser = async (req, res = express.response) => {
 
         res.status(500).json({
             ok: false,
-            msg: 'Hubo un error interno'
+            msg: 'Hubo un error interno',
+            error
         })
     }
 
@@ -45,39 +46,43 @@ const crearUser = async (req, res = express.response) => {
 const loginUser = async (req, res = express.response) => {
 
     const { email, password } = req.body;
-
-    try {
-        const user = await User.findOne({ email });
-
-        if (!user) {
+    
+    try {    
+        const usuario = await User.findOne({ email });
+        if ( !usuario ) {
             return res.status(400).json({
                 ok: false,
-                msg: 'El usuario no existe'
+                msg: 'El usuario no existe con ese email'
             });
         }
 
-        const validPassword = bcrypt.compareSync(password, usuario.password);
-        if (!validPassword) {
+        // Confirmar los passwords
+        const validPassword = bcrypt.compareSync( password, usuario.password );
+
+        if ( !validPassword ) {
             return res.status(400).json({
                 ok: false,
-                msg: 'Credenciales incorrectas'
-            })
+                msg: 'Password incorrecto'
+            });
         }
 
-        //generar jwt
-        const token = await generateJWT(user.id, user.name);
+        // Generar JWT
+        const token = await generateJWT( usuario.id, usuario.name );
+
         res.json({
             ok: true,
-            user,
+            uid: usuario.id,
+            name: usuario.name,
             token
         })
 
 
     } catch (error) {
+        console.log(error);
         res.status(500).json({
             ok: false,
-            msg: 'Hubo un error interno'
-        })
+            msg: 'Por favor hable con el administrador'
+        });
     }
 }
 
