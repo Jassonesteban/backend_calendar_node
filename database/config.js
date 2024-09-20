@@ -1,14 +1,12 @@
 const mongoose = require('mongoose');
 
-
 const dbConnection = async() => {
-    try {
-        await mongoose.connect(process.env.DB_CNN);
 
-        console.log("DB ONLINE")
-    } catch (error) {
-        throw new Error("Error al conectar a la BD")
-    }
+    const mongoURI = process.env.DB_CNN;
+
+    await mongoose.connect(mongoURI)
+        .then(() => console.log('Conectado a MongoDB en Railway :D'))
+        .catch((err) => console.error('Error al conectar a MongoDB:', err));
 }
 
 module.exports = {
