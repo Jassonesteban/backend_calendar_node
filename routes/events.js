@@ -19,7 +19,7 @@ router.post('/create', [
     check('title', 'El titulo es obligatorio').not().isEmpty(),
     check('start', 'Fecha de inicio debe ser valida').custom(isDate),
     check('end', 'Fecha de fin debe ser valida').custom(isDate),
-    validarCampos
+    validarCampos 
 ],
     createEvent);
 
